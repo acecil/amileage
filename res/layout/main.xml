@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TableLayout
+        android:id="@+id/enterLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" android:stretchColumns="*" android:layout_gravity="fill">
+
+        <TableRow
+            android:id="@+id/milesRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" android:layout_gravity="fill">
+
+            <TextView
+                android:id="@+id/milesLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/MilesLabel"
+                android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+            <EditText
+                android:id="@+id/milesEntry"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" android:layout_weight="1" android:nextFocusDown="@+id/litresEntry" android:nextFocusRight="@+id/litresEntry"/>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/litresRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/litresLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/LitresLabel"
+                android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+            <EditText
+                android:id="@+id/litresEntry"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" android:nextFocusDown="@+id/priceEntry" android:nextFocusLeft="@+id/milesEntry" android:nextFocusRight="@+id/priceEntry" android:nextFocusUp="@+id/milesEntry"/>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/priceRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/priceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/PriceLabel"
+                android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+            <EditText
+                android:id="@+id/priceEntry"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" android:nextFocusDown="@+id/mergeButton" android:nextFocusLeft="@+id/litresEntry" android:nextFocusRight="@+id/addButton" android:nextFocusUp="@+id/litresEntry"/>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/buttonRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/addButton"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/AddLabel" android:nextFocusDown="@+id/mileageList" android:nextFocusLeft="@+id/priceEntry" android:nextFocusRight="@+id/mergeButton" android:nextFocusUp="@+id/priceEntry"/>
+
+            <Button
+                android:id="@+id/mergeButton"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/MergeLabel" android:nextFocusDown="@+id/mileageList" android:nextFocusLeft="@+id/addButton" android:nextFocusRight="@+id/mileageList" android:nextFocusUp="@+id/priceEntry"/>
+        </TableRow>
+    </TableLayout>
+
+    <ListView
+        android:id="@+id/mileageList"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+</LinearLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mileage</string>
+    <string name="MilesLabel">Miles</string>
+    <string name="LitresLabel">Litres</string>
+    <string name="PriceLabel">Price</string>
+    <string name="AddLabel">Add</string>
+    <string name="MergeLabel">Merge</string>
+
+</resources>
