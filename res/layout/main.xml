@@ -10,19 +10,18 @@
         android:layout_height="wrap_content" android:stretchColumns="*" android:layout_gravity="fill">
 
         <TableRow
-            android:id="@+id/milesRow"
+            android:id="@+id/distanceRow"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" android:layout_gravity="fill">
 
             <TextView
-                android:id="@+id/milesLabel"
+                android:id="@+id/distanceLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/MilesLabel"
                 android:textAppearance="?android:attr/textAppearanceLarge"/>
 
             <EditText
-                android:id="@+id/milesEntry"
+                android:id="@+id/distanceEntry"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal" android:layout_weight="1" android:nextFocusDown="@+id/litresEntry" android:nextFocusRight="@+id/litresEntry"/>

@@ -7,11 +7,15 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,8 +24,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class MileageActivity extends Activity {
+	private static final int PREFERENCE_CODE = 1;
 	public static final String DB_DATE_FORMAT = "yyyy-dd-MM HH:mm:ss";
-	private TextView milesEntry = null;
+	private TextView distanceLabel = null;
+	private TextView distanceEntry = null;
 	private TextView litresEntry = null;
 	private TextView priceEntry = null;
 	private Button addButton = null;
@@ -44,21 +50,28 @@ public class MileageActivity extends Activity {
 		cursor = db.query(Database.TABLE_NAME, null, null, null, null, null,
 				Database.KEY_DATE + " DESC");
 
+		/* Get references to all widgets in GUI. */
 		addButton = (Button) findViewById(R.id.addButton);
 		mergeButton = (Button) findViewById(R.id.mergeButton);
 		mileageList = (ListView) findViewById(R.id.mileageList);
-		milesEntry = (TextView) findViewById(R.id.milesEntry);
+		distanceLabel = (TextView) findViewById(R.id.distanceLabel);
+		distanceEntry = (TextView) findViewById(R.id.distanceEntry);
 		litresEntry = (TextView) findViewById(R.id.litresEntry);
 		priceEntry = (TextView) findViewById(R.id.priceEntry);
+		
+		/* Set labels based on preferences. */
+		setLabels();
 
-		adapt = new MileageAdapter(this, cursor);
+		/* Set adapter for mapping database values to mileage list. */
+		adapt = new MileageAdapter(this, cursor, getPreferences(MODE_PRIVATE));
 		mileageList.setAdapter(adapt);
 
+		/* Button callbacks. */
 		addButton.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
 				/* Add items to database. */
-				double miles = Double.parseDouble(milesEntry.getText()
+				double distance = Double.parseDouble(distanceEntry.getText()
 						.toString());
 				double litres = Double.parseDouble(litresEntry.getText()
 						.toString());
@@ -68,7 +81,7 @@ public class MileageActivity extends Activity {
 				SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT);
 				ContentValues vals = new ContentValues();
 				vals.put(Database.KEY_DATE, sdate.format(new Date()));
-				vals.put(Database.KEY_MILES, miles);
+				vals.put(Database.KEY_MILES, distance);
 				vals.put(Database.KEY_LITRES, litres);
 				vals.put(Database.KEY_PRICE, price);
 				db.insert(Database.TABLE_NAME, null, vals);
@@ -82,7 +95,7 @@ public class MileageActivity extends Activity {
 
 			public void onClick(View v) {
 				/* Merge item with top item in database. */
-				double miles = Double.parseDouble(milesEntry.getText()
+				double miles = Double.parseDouble(distanceEntry.getText()
 						.toString());
 				double litres = Double.parseDouble(litresEntry.getText()
 						.toString());
@@ -126,75 +139,30 @@ public class MileageActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		menu.add("Delete History");
-		menu.add("About");
+		
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.mainmenu, menu);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
-		String menuTitle = menuItem.getTitle().toString();
-		if (menuTitle.equals("About")) {
-
-			String versionString = "Unknown";
-			try {
-				versionString = getPackageManager().getPackageInfo(
-						getPackageName(), 0).versionName;
-			} catch (NameNotFoundException e) {
-				/* Just set version string as unknown. */
-				versionString = "Unknown";
-			}
-			AlertDialog.Builder b = new AlertDialog.Builder(this);
-			b.setTitle("About Mileage")
-					.setMessage(
-							"© 2011 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
-									+ versionString)
-					.setPositiveButton("Close",
-							new AlertDialog.OnClickListener() {
-
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.cancel();
-								}
-							});
-			AlertDialog d = b.create();
-			d.show();
-
-			return true;
-		} else if (menuTitle.equals("Delete History")) {
-
-			AlertDialog.Builder b = new AlertDialog.Builder(this);
-			b.setTitle("Delete History")
-					.setMessage(
-							"This will erase all previous records.\nAre you sure?")
-					.setPositiveButton("Yes",
-							new AlertDialog.OnClickListener() {
-
-								public void onClick(DialogInterface dialog,
-										int which) {
-									db.delete(Database.TABLE_NAME, null, null);
-									cursor.requery();
-									dialog.cancel();
-								}
-							})
-					.setNegativeButton("No", new AlertDialog.OnClickListener() {
-
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					});
-			AlertDialog d = b.create();
-			d.show();
-
-			return true;
+		switch(menuItem.getItemId())
+		{
+		case R.id.aboutItem:
+			return onClickAboutMenuItem();
+		case R.id.deleteHistoryItem:
+			return onClickDeleteHistoryMenuItem();
+		case R.id.preferencesItem:
+			return onClickPreferencesMenuItem();
+		default:
+			return false;
 		}
-
-		return false;
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
-		savedInstanceState.putString("Miles", milesEntry.getText().toString());
+		savedInstanceState.putString("Distance", distanceEntry.getText().toString());
 		savedInstanceState
 				.putString("Litres", litresEntry.getText().toString());
 		savedInstanceState.putString("Price", priceEntry.getText().toString());
@@ -204,7 +172,7 @@ public class MileageActivity extends Activity {
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		milesEntry.setText(savedInstanceState.getString("Miles"));
+		distanceEntry.setText(savedInstanceState.getString("Distance"));
 		litresEntry.setText(savedInstanceState.getString("Litres"));
 		priceEntry.setText(savedInstanceState.getString("Price"));
 	}
@@ -215,5 +183,92 @@ public class MileageActivity extends Activity {
 
 		cursor.close();
 		db.close();
+	}
+	
+	private boolean onClickAboutMenuItem()
+	{
+		String versionString = "Unknown";
+		try {
+			versionString = getPackageManager().getPackageInfo(
+					getPackageName(), 0).versionName;
+		} catch (NameNotFoundException e) {
+			/* Just set version string as unknown. */
+			versionString = "Unknown";
+		}
+		AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setTitle("About Mileage")
+				.setMessage(
+						"© 2011 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
+								+ versionString)
+				.setPositiveButton("Close",
+						new AlertDialog.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								dialog.cancel();
+							}
+						});
+		AlertDialog d = b.create();
+		d.show();
+
+		return true;
+	}
+	
+	private boolean onClickDeleteHistoryMenuItem()
+	{
+		AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setTitle("Delete History")
+				.setMessage(
+						"This will erase all previous records.\nAre you sure?")
+				.setPositiveButton("Yes",
+						new AlertDialog.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								db.delete(Database.TABLE_NAME, null, null);
+								cursor.requery();
+								dialog.cancel();
+							}
+						})
+				.setNegativeButton("No", new AlertDialog.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+		AlertDialog d = b.create();
+		d.show();
+
+		return true;
+	}
+	
+	private boolean onClickPreferencesMenuItem()
+	{
+		/* Launch Preference activity. */
+		Intent i = new Intent(MileageActivity.this, MileagePrefsActivity.class);
+		startActivityForResult(i, PREFERENCE_CODE);
+		return true;
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch(requestCode) {
+		case PREFERENCE_CODE:
+			setLabels();
+			break;
+		}
+	}
+	
+	private void setLabels() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String units = prefs.getString("Units", "0");
+		if( units.equals("0")) {
+			distanceLabel.setText("Miles");
+		} else if( units.equals("1")) {
+			distanceLabel.setText("Miles");
+		} else if(units.equals("2")) {
+			distanceLabel.setText("Km");
+		}
+		
 	}
 }

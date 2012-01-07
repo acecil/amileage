@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Mileage Preferences" android:layout="@xml/preferences" android:key="MileagePrefs" android:persistent="true" android:enabled="true">
+    <PreferenceCategory android:summary="Required units for display" android:title="Units" android:enabled="true" android:persistent="true">
+        <ListPreference android:title="Units" android:key="Units" android:entries="@array/unitsEntries" android:entryValues="@array/unitsValues" android:persistent="true" android:defaultValue="0" android:enabled="true"/>
+    </PreferenceCategory>
+</PreferenceScreen>

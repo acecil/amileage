@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,16 +16,19 @@ import android.widget.TextView;
 
 public class MileageAdapter extends CursorAdapter {
 	
-	public MileageAdapter(Context context, Cursor c) {		
+	private final SharedPreferences preferences;
+	
+	public MileageAdapter(Context context, Cursor c, SharedPreferences pref) {		
 		super(context, c);
+		preferences = pref;
 	}
 
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		
 		TextView dateView = (TextView)view.findViewById(R.id.dateListItem);
-		TextView mpgView = (TextView)view.findViewById(R.id.mpgListItem);
-		TextView ppmView = (TextView)view.findViewById(R.id.ppmListItem);
+		TextView economyView = (TextView)view.findViewById(R.id.economyListItem);
+		TextView costView = (TextView)view.findViewById(R.id.costListItem);
 		
 		
 		String date = cursor.getString(cursor.getColumnIndex(Database.KEY_DATE));
@@ -49,10 +53,23 @@ public class MileageAdapter extends CursorAdapter {
 		nf.setMaximumFractionDigits(3);
 		nf.setMinimumFractionDigits(3);
 		
-		dateView.setText(outDate);
-		mpgView.setText(nf.format(mpg) + " mpg");
-		ppmView.setText(nf.format(ppm) + " ppm");
+		/* Get settings from settings objects. */
+		String units = preferences.getString("Units", "0");
+		if( units.equals("0") ) {
+			economyView.setText(nf.format(mpg) + " mpg");
+			costView.setText(nf.format(ppm) + " ppm");			
+		} else if( units.equals("1") ) {
+			double mpusg = mpg / 1.20095042;
+			economyView.setText(nf.format(mpusg) + " mpg");
+			costView.setText(nf.format(ppm) + " ppm");
+		} else if( units.equals("2") ) {
+			double lp100km = 100 * 4.54609188 / 1.609344 / mpg;
+			economyView.setText(nf.format(lp100km) + " l/100km");
+			double ppkm = ppm / 1.609344;
+			costView.setText(nf.format(ppkm) + " ppkm");			
+		}
 		
+		dateView.setText(outDate);
 	}
 
 	@Override
