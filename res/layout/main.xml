@@ -1,93 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  (c) Copyright 2012 by Andrew Gascoyne-Cecil
+  
+  This file is part of Mileage.
+ 
+  Mileage is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Mileage is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <TableLayout
-        android:id="@+id/enterLayout"
+    <EditText
+        android:id="@+id/distanceEntry"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" android:stretchColumns="*" android:layout_gravity="fill">
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:nextFocusDown="@+id/volumeEntry"
+        android:nextFocusRight="@+id/volumeEntry" />
 
-        <TableRow
-            android:id="@+id/distanceRow"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" android:layout_gravity="fill">
+    <EditText
+        android:id="@+id/volumeEntry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:nextFocusDown="@+id/priceEntry"
+        android:nextFocusLeft="@+id/distanceEntry"
+        android:nextFocusRight="@+id/priceEntry"
+        android:nextFocusUp="@+id/distanceEntry" />
 
-            <TextView
-                android:id="@+id/distanceLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+    <EditText
+        android:id="@+id/priceEntry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/PriceLabel"
+        android:inputType="numberDecimal"
+        android:nextFocusDown="@+id/addButton"
+        android:nextFocusLeft="@+id/volumeEntry"
+        android:nextFocusRight="@+id/addButton"
+        android:nextFocusUp="@+id/volumeEntry" />
 
-            <EditText
-                android:id="@+id/distanceEntry"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal" android:layout_weight="1" android:nextFocusDown="@+id/litresEntry" android:nextFocusRight="@+id/litresEntry"/>
-        </TableRow>
+    <LinearLayout
+        android:id="@+id/buttonLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-        <TableRow
-            android:id="@+id/litresRow"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+        <Button
+            android:id="@+id/addButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:nextFocusDown="@+id/mileageList"
+            android:nextFocusLeft="@+id/priceEntry"
+            android:nextFocusRight="@+id/mergeButton"
+            android:nextFocusUp="@+id/priceEntry"
+            android:text="@string/AddLabel" android:layout_weight="1"/>
 
-            <TextView
-                android:id="@+id/litresLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/LitresLabel"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+        <Button
+            android:id="@+id/mergeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:nextFocusDown="@+id/mileageList"
+            android:nextFocusLeft="@+id/addButton"
+            android:nextFocusRight="@+id/mileageList"
+            android:nextFocusUp="@+id/priceEntry"
+            android:text="@string/MergeLabel" android:layout_weight="1"/>
 
-            <EditText
-                android:id="@+id/litresEntry"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal" android:nextFocusDown="@+id/priceEntry" android:nextFocusLeft="@+id/milesEntry" android:nextFocusRight="@+id/priceEntry" android:nextFocusUp="@+id/milesEntry"/>
-        </TableRow>
+    </LinearLayout>
 
-        <TableRow
-            android:id="@+id/priceRow"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+    <LinearLayout
+        android:id="@+id/listHeader"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/priceLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/PriceLabel"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+        <TextView
+            android:id="@+id/dateLabel"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1" android:text="@string/DateLabel" android:gravity="center_horizontal"/>
 
-            <EditText
-                android:id="@+id/priceEntry"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal" android:nextFocusDown="@+id/mergeButton" android:nextFocusLeft="@+id/litresEntry" android:nextFocusRight="@+id/addButton" android:nextFocusUp="@+id/litresEntry"/>
-        </TableRow>
+        <TextView
+            android:id="@+id/economyLabel"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1" android:gravity="center_horizontal"/>
 
-        <TableRow
-            android:id="@+id/buttonRow"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+        <TextView
+            android:id="@+id/costLabel"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1" android:gravity="center_horizontal"/>
 
-            <Button
-                android:id="@+id/addButton"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/AddLabel" android:nextFocusDown="@+id/mileageList" android:nextFocusLeft="@+id/priceEntry" android:nextFocusRight="@+id/mergeButton" android:nextFocusUp="@+id/priceEntry"/>
-
-            <Button
-                android:id="@+id/mergeButton"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/MergeLabel" android:nextFocusDown="@+id/mileageList" android:nextFocusLeft="@+id/addButton" android:nextFocusRight="@+id/mileageList" android:nextFocusUp="@+id/priceEntry"/>
-        </TableRow>
-    </TableLayout>
+    </LinearLayout>
 
     <ListView
         android:id="@+id/mileageList"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_weight="1" >
     </ListView>
 
 </LinearLayout>

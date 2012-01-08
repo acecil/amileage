@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="horizontal" android:id="@+id/listItem" android:layout_gravity="fill">
+    android:layout_height="fill_parent" >
 
     <TextView
-        android:id="@+id/dateListItem"
-        android:layout_width="wrap_content"
+        android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:gravity="center_horizontal" android:id="@+id/dateLabel" android:layout_weight="1">
+    </TextView>
 
     <TextView
-        android:id="@+id/economyListItem"
-        android:layout_width="wrap_content"
+        android:id="@+id/economyLabel"
+        android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1"/>
+        android:gravity="center_horizontal" android:layout_weight="1"/>
 
     <TextView
-        android:id="@+id/costListItem"
-        android:layout_width="wrap_content"
+        android:id="@+id/costLabel"
+        android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="1"/>
+        android:gravity="center_horizontal" android:layout_weight="1"/>
 
 </LinearLayout>

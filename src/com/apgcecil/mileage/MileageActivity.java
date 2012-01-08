@@ -1,3 +1,21 @@
+/*
+ * (c) Copyright 2012 by Andrew Gascoyne-Cecil
+ * 
+ * This file is part of Mileage.
+ *
+ * Mileage is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Mileage is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.apgcecil.mileage;
 
 import java.text.SimpleDateFormat;
@@ -24,20 +42,41 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class MileageActivity extends Activity {
-	private static final int PREFERENCE_CODE = 1;
+	public static final int PREFERENCE_CODE = 1;
 	public static final String DB_DATE_FORMAT = "yyyy-dd-MM HH:mm:ss";
-	private TextView distanceLabel = null;
+	public static final String DISTANCE_SAVE = "Distance";
+	public static final String VOLUME_SAVE = "Volume";
+	public static final String PRICE_SAVE = "Price";
+	public static final String DISTANCE_UNITS = "DistanceUnits";
+	public static final String VOLUME_UNITS = "VolumeUnits";
+	public static final String ECONOMY_UNITS = "EconomyUnits";
+	public static final int DISTANCE_UNITS_MILES = 0;
+	public static final int DISTANCE_UNITS_KM = 1;
+	public static final int VOLUME_UNITS_LITRES = 0;
+	public static final int VOLUME_UNITS_GALLONS = 1;
+	public static final int VOLUME_UNITS_US_GALLONS = 2;
+	public static final int ECONOMY_UNITS_MPG = 0;
+	public static final int ECONOMY_UNITS_US_MPG = 1;
+	public static final int ECONOMY_UNITS_LP100KM = 2;
+	public static final String ECONOMY_LABEL_MPG = "mpg";
+	public static final String ECONOMY_LABEL_US_MPG = "mpg";
+	public static final String ECONOMY_LABEL_LP100KM = "l/100km";
+	public static final String COST_LABEL_PPM = "p/m";
+	public static final String COST_LABEL_PPKM = "p/km";
+	
 	private TextView distanceEntry = null;
-	private TextView litresEntry = null;
+	private TextView volumeEntry = null;
 	private TextView priceEntry = null;
 	private Button addButton = null;
 	private Button mergeButton = null;
+	private TextView economyLabel = null;
+	private TextView costLabel = null;
 	private ListView mileageList = null;
 	private Database dbHelper = null;
 	private Cursor cursor = null;
 	private MileageAdapter adapt = null;
 	private SQLiteDatabase db = null;
-
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,18 +93,22 @@ public class MileageActivity extends Activity {
 		addButton = (Button) findViewById(R.id.addButton);
 		mergeButton = (Button) findViewById(R.id.mergeButton);
 		mileageList = (ListView) findViewById(R.id.mileageList);
-		distanceLabel = (TextView) findViewById(R.id.distanceLabel);
 		distanceEntry = (TextView) findViewById(R.id.distanceEntry);
-		litresEntry = (TextView) findViewById(R.id.litresEntry);
+		volumeEntry = (TextView) findViewById(R.id.volumeEntry);
 		priceEntry = (TextView) findViewById(R.id.priceEntry);
+		economyLabel = (TextView) findViewById(R.id.economyLabel);
+		costLabel = (TextView) findViewById(R.id.costLabel);
 		
 		/* Set labels based on preferences. */
 		setLabels();
 
 		/* Set adapter for mapping database values to mileage list. */
-		adapt = new MileageAdapter(this, cursor, getPreferences(MODE_PRIVATE));
+		adapt = new MileageAdapter(this, cursor, PreferenceManager.getDefaultSharedPreferences(this));
 		mileageList.setAdapter(adapt);
-
+	
+		/* Save activity so we can reference it in the callbacks. */
+		final Activity activity = this;
+	
 		/* Button callbacks. */
 		addButton.setOnClickListener(new OnClickListener() {
 
@@ -73,16 +116,40 @@ public class MileageActivity extends Activity {
 				/* Add items to database. */
 				double distance = Double.parseDouble(distanceEntry.getText()
 						.toString());
-				double litres = Double.parseDouble(litresEntry.getText()
+				double volume = Double.parseDouble(volumeEntry.getText()
 						.toString());
 				double price = Double.parseDouble(priceEntry.getText()
 						.toString());
+				
+				/* Convert distance and volume if required. */
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+				int distanceUnits = Integer.parseInt(prefs.getString(DISTANCE_UNITS, Integer.toString(DISTANCE_UNITS_MILES)));
+				switch(distanceUnits) {
+				case DISTANCE_UNITS_MILES:
+					/* Nothing to do. */
+					break;
+				case DISTANCE_UNITS_KM:
+					distance *= 0.621371192;
+					break;
+				}
+				int volumeUnits = Integer.parseInt(prefs.getString(VOLUME_UNITS, Integer.toString(VOLUME_UNITS_LITRES)));
+				switch(volumeUnits) {
+				case VOLUME_UNITS_LITRES:
+					/* Nothing to do. */
+					break;
+				case VOLUME_UNITS_GALLONS:
+					volume *= 4.54609188;
+					break;
+				case VOLUME_UNITS_US_GALLONS:
+					volume *= 3.78541178;
+					break;
+				}
 
 				SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT);
 				ContentValues vals = new ContentValues();
 				vals.put(Database.KEY_DATE, sdate.format(new Date()));
 				vals.put(Database.KEY_MILES, distance);
-				vals.put(Database.KEY_LITRES, litres);
+				vals.put(Database.KEY_LITRES, volume);
 				vals.put(Database.KEY_PRICE, price);
 				db.insert(Database.TABLE_NAME, null, vals);
 				cursor.requery();
@@ -97,7 +164,7 @@ public class MileageActivity extends Activity {
 				/* Merge item with top item in database. */
 				double miles = Double.parseDouble(distanceEntry.getText()
 						.toString());
-				double litres = Double.parseDouble(litresEntry.getText()
+				double litres = Double.parseDouble(volumeEntry.getText()
 						.toString());
 				double price = Double.parseDouble(priceEntry.getText()
 						.toString());
@@ -162,19 +229,19 @@ public class MileageActivity extends Activity {
 
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
-		savedInstanceState.putString("Distance", distanceEntry.getText().toString());
+		savedInstanceState.putString(DISTANCE_SAVE, distanceEntry.getText().toString());
 		savedInstanceState
-				.putString("Litres", litresEntry.getText().toString());
-		savedInstanceState.putString("Price", priceEntry.getText().toString());
+				.putString(VOLUME_SAVE, volumeEntry.getText().toString());
+		savedInstanceState.putString(PRICE_SAVE, priceEntry.getText().toString());
 		super.onSaveInstanceState(savedInstanceState);
 	}
 
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		distanceEntry.setText(savedInstanceState.getString("Distance"));
-		litresEntry.setText(savedInstanceState.getString("Litres"));
-		priceEntry.setText(savedInstanceState.getString("Price"));
+		distanceEntry.setText(savedInstanceState.getString(DISTANCE_SAVE));
+		volumeEntry.setText(savedInstanceState.getString(DISTANCE_SAVE));
+		priceEntry.setText(savedInstanceState.getString(PRICE_SAVE));
 	}
 
 	@Override
@@ -195,17 +262,18 @@ public class MileageActivity extends Activity {
 			/* Just set version string as unknown. */
 			versionString = "Unknown";
 		}
+		final Activity activity = this;
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setTitle("About Mileage")
 				.setMessage(
-						"© 2011 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
+						"© 2012 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
 								+ versionString)
-				.setPositiveButton("Close",
+				.setNeutralButton("License", 
 						new AlertDialog.OnClickListener() {
-
+					
 							public void onClick(DialogInterface dialog,
 									int which) {
-								dialog.cancel();
+								License.show(activity);
 							}
 						});
 		AlertDialog d = b.create();
@@ -255,19 +323,43 @@ public class MileageActivity extends Activity {
 		switch(requestCode) {
 		case PREFERENCE_CODE:
 			setLabels();
+			adapt.notifyDataSetChanged();
 			break;
 		}
 	}
 	
 	private void setLabels() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		String units = prefs.getString("Units", "0");
-		if( units.equals("0")) {
-			distanceLabel.setText("Miles");
-		} else if( units.equals("1")) {
-			distanceLabel.setText("Miles");
-		} else if(units.equals("2")) {
-			distanceLabel.setText("Km");
+		
+		/* Get label for distance. */
+		int distanceUnits = Integer.parseInt(prefs.getString(DISTANCE_UNITS, Integer.toString(DISTANCE_UNITS_MILES)));
+		String[] distanceLabels = getResources().getStringArray(R.array.distanceUnitsEntries);
+		distanceEntry.setHint(distanceLabels[distanceUnits]);
+		switch(distanceUnits) {
+		case DISTANCE_UNITS_MILES:
+			costLabel.setText(COST_LABEL_PPM);
+			break;
+		case DISTANCE_UNITS_KM:
+			costLabel.setText(COST_LABEL_PPKM);
+			break;
+		}
+
+		/* Get label for volume. */
+		int volumeUnits = Integer.parseInt(prefs.getString(VOLUME_UNITS, Integer.toString(VOLUME_UNITS_LITRES)));
+		String[] volumeLabels = getResources().getStringArray(R.array.volumeUnitsEntries);
+		volumeEntry.setHint(volumeLabels[volumeUnits]);
+		
+		int economyUnits = Integer.parseInt(prefs.getString(ECONOMY_UNITS, Integer.toString(ECONOMY_UNITS_MPG)));
+		switch(economyUnits) {
+		case ECONOMY_UNITS_MPG:
+			economyLabel.setText(ECONOMY_LABEL_MPG);
+			break;
+		case ECONOMY_UNITS_US_MPG:
+			economyLabel.setText(ECONOMY_LABEL_US_MPG);
+			break;
+		case ECONOMY_UNITS_LP100KM:
+			economyLabel.setText(ECONOMY_LABEL_LP100KM);
+			break;
 		}
 		
 	}

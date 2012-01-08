@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  (c) Copyright 2012 by Andrew Gascoyne-Cecil
+  
+  This file is part of Mileage.
+ 
+  Mileage is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Mileage is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <resources>
     <string name="app_name">Mileage</string>
-    <string name="MilesLabel">Miles</string>
-    <string name="LitresLabel">Litres</string>
     <string name="PriceLabel">Price</string>
     <string name="AddLabel">Add</string>
     <string name="MergeLabel">Merge</string>
     <string name="pref_name">Mileage Preferences</string>
+    <string name="lic_title">License</string>
+    <string name="DateLabel">Date</string>
 
 </resources>

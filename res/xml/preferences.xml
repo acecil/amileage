@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  (c) Copyright 2012 by Andrew Gascoyne-Cecil
+  
+  This file is part of Mileage.
+ 
+  Mileage is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Mileage is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Mileage Preferences" android:layout="@xml/preferences" android:key="MileagePrefs" android:persistent="true" android:enabled="true">
     <PreferenceCategory android:summary="Required units for display" android:title="Units" android:enabled="true" android:persistent="true">
-        <ListPreference android:title="Units" android:key="Units" android:entries="@array/unitsEntries" android:entryValues="@array/unitsValues" android:persistent="true" android:defaultValue="0" android:enabled="true"/>
+        <ListPreference android:title="Distance" android:key="DistanceUnits" android:entries="@array/distanceUnitsEntries" android:entryValues="@array/distanceUnitsValues" android:persistent="true" android:defaultValue="0" android:enabled="true" android:summary="Units to use for distance"/>
+        <ListPreference android:key="VolumeUnits" android:entries="@array/volumeUnitsEntries" android:enabled="true" android:summary="Units to use for volume" android:persistent="true" android:entryValues="@array/volumeUnitsValues" android:title="Volume" android:defaultValue="0"/>
+        <ListPreference android:key="EconomyUnits" android:entries="@array/economyUnitsEntries" android:entryValues="@array/economyUnitsValues" android:title="Economy" android:summary="Units to use for fuel economy" android:enabled="true" android:defaultValue="0" android:persistent="true"/>
     </PreferenceCategory>
 </PreferenceScreen>
