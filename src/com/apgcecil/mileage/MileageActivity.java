@@ -154,7 +154,10 @@ public class MileageActivity extends Activity {
 				db.insert(Database.TABLE_NAME, null, vals);
 				cursor.requery();
 
-				/* Select item in list. */
+				/* Clear textboxes. */
+				distanceEntry.setText("");
+				volumeEntry.setText("");
+				priceEntry.setText("");
 			}
 		});
 
@@ -196,8 +199,13 @@ public class MileageActivity extends Activity {
 								+ cursor.getInt(cursor
 										.getColumnIndex(Database.KEY_ID)), null);
 
-				/* Select item in list. */
+				/* Update database view. */
 				cursor.requery();
+				
+				/* Clear textboxes. */
+				distanceEntry.setText("");
+				volumeEntry.setText("");
+				priceEntry.setText("");
 			}
 		});
 

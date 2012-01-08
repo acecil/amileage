@@ -19,7 +19,7 @@
  -->
 <resources>
     <string name="app_name">Mileage</string>
-    <string name="PriceLabel">Price</string>
+    <string name="PriceLabel">Price (Pence)</string>
     <string name="AddLabel">Add</string>
     <string name="MergeLabel">Merge</string>
     <string name="pref_name">Mileage Preferences</string>
