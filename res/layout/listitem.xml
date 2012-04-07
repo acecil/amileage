@@ -5,21 +5,31 @@
     android:layout_height="fill_parent" >
 
     <TextView
+        android:id="@+id/dateLabel"
         android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal" android:id="@+id/dateLabel" android:layout_weight="1">
+        android:layout_weight="1"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="listItemClickHandler" >
     </TextView>
 
     <TextView
         android:id="@+id/economyLabel"
         android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal" android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="listItemClickHandler" />
 
     <TextView
         android:id="@+id/costLabel"
         android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal" android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="listItemClickHandler" />
 
 </LinearLayout>

@@ -22,6 +22,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,8 +32,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 
 public class MileageAdapter extends CursorAdapter {
+	
+	public class MileageItemData {
+		public double miles;
+		public double litres;
+		public double price;
+	}
 	
 	private static final String DISPLAY_DATE_FORMAT = "dd MMM yy";	
 	private final SharedPreferences prefs;
@@ -41,6 +49,7 @@ public class MileageAdapter extends CursorAdapter {
 	private final int milesColumn;
 	private final int litresColumn;
 	private final int priceColumn;
+	private final HashMap<LinearLayout, MileageItemData> adapterData = new HashMap<LinearLayout, MileageItemData>();
 	
 	public MileageAdapter(Context context, Cursor c, SharedPreferences prefs) {		
 		super(context, c);
@@ -75,8 +84,8 @@ public class MileageAdapter extends CursorAdapter {
 			/* Just use first 10 chars of date string. */
 			outDate = date.substring(0, 10);
 		} 
-		double mpg = miles / (litres / 4.54609188);
-		double ppm = price * litres / miles;
+		double mpg = (litres > 0) ? miles / (litres / 4.54609188) : 0;
+		double ppm = (miles > 0) ? price * litres / miles : 0;
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(3);
 		nf.setMinimumFractionDigits(3);
@@ -93,7 +102,7 @@ public class MileageAdapter extends CursorAdapter {
 			economy = mpg * 0.83267384;
 			break;
 		case MileageActivity.ECONOMY_UNITS_LP100KM:
-			economy = 100 * 4.54609188 / 1.609344 / mpg;
+			economy = (mpg > 0) ? 100 * 4.54609188 / 1.609344 / mpg : 0;
 			break;
 		}
 		int distanceUnits = Integer.parseInt(prefs.getString(MileageActivity.DISTANCE_UNITS, Integer.toString(MileageActivity.DISTANCE_UNITS_MILES)));
@@ -108,10 +117,22 @@ public class MileageAdapter extends CursorAdapter {
 		economyView.setText(nf.format(economy));
 		costView.setText(nf.format(cost));		
 		dateView.setText(outDate);
+		
+		/* Add or replace in map. */
+		MileageItemData itemData = new MileageItemData();
+		itemData.miles = miles;
+		itemData.litres = litres;
+		itemData.price = price;
+		adapterData.put((LinearLayout)view, itemData);
 	}
 
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		return inflater.inflate(R.layout.listitem, parent, false);
 	}
+	
+	public MileageItemData getItemData(LinearLayout ll) {
+		return adapterData.get(ll);
+	}
+	
 }
