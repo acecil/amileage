@@ -20,19 +20,26 @@ package com.apgcecil.mileage;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
-import com.apgcecil.mileage.MileageAdapter.MileageItemData;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.LoaderManager;
+import android.content.ContentProviderClient;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -46,7 +53,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.apgcecil.mileage.MileageAdapter.MileageItemData;
+
+@SuppressLint("NewApi")
+@SuppressWarnings("deprecation")
 public class MileageActivity extends Activity {
+	
 	public static final int PREFERENCE_CODE = 1;
 	public static final String DB_DATE_FORMAT = "yyyy-dd-MM HH:mm:ss";
 	public static final String DISTANCE_SAVE = "Distance";
@@ -77,12 +89,11 @@ public class MileageActivity extends Activity {
 	private TextView economyLabel = null;
 	private TextView costLabel = null;
 	private ListView mileageList = null;
-	private Database dbHelper = null;
-	private Cursor cursor = null;
 	private MileageAdapter adapt = null;
-	private SQLiteDatabase db = null;
+	private ContentProviderClient cpr = null;
 	private SharedPreferences prefs = null;
-
+	private MileageCallbacks callbacks = null;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,10 +101,7 @@ public class MileageActivity extends Activity {
 		setContentView(R.layout.main);
 
 		/* Create database helper. */
-		dbHelper = new Database(this);
-		db = dbHelper.getWritableDatabase();
-		cursor = db.query(Database.TABLE_NAME, null, null, null, null, null,
-				Database.KEY_DATE + " DESC");
+		cpr = getContentResolver().acquireContentProviderClient(MileageProvider.URI);
 
 		/* Get references to all widgets in GUI. */
 		addButton = (Button) findViewById(R.id.addButton);
@@ -110,12 +118,24 @@ public class MileageActivity extends Activity {
 
 		/* Set adapter for mapping database values to mileage list. */
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		adapt = new MileageAdapter(this, cursor, prefs);
+		if( Build.VERSION.SDK_INT >= 11 ) {
+			adapt = new MileageAdapter(this, prefs);
+		} else {
+			SQLiteOpenHelper dbHelper = new Database(this);
+			SQLiteDatabase db = dbHelper.getWritableDatabase();
+			Cursor cursor = db.query(Database.TABLE_NAME, null, null, null, null, null,
+					Database.KEY_DATE + " DESC");
+			adapt = new MileageAdapter(this, cursor, prefs);
+		}
 		mileageList.setAdapter(adapt);
 
 		/* Save activity so we can reference it in the callbacks. */
-		final Activity activity = this;
-
+		final MileageActivity activity = this;
+		
+		if( Build.VERSION.SDK_INT >= 11 ) {
+			callbacks = new MileageCallbacks(this);
+		}
+		
 		/* Make mileage list clickable. */
 		mileageList.setClickable(true);
 
@@ -161,14 +181,22 @@ public class MileageActivity extends Activity {
 					}
 
 					SimpleDateFormat sdate = new SimpleDateFormat(
-							DB_DATE_FORMAT);
+							DB_DATE_FORMAT, Locale.getDefault());
 					ContentValues vals = new ContentValues();
 					vals.put(Database.KEY_DATE, sdate.format(new Date()));
 					vals.put(Database.KEY_MILES, distance);
 					vals.put(Database.KEY_LITRES, volume);
 					vals.put(Database.KEY_PRICE, price);
-					db.insert(Database.TABLE_NAME, null, vals);
-					cursor.requery();
+					try {
+						cpr.insert(MileageProvider.CONTENT_URI, vals);
+						if( Build.VERSION.SDK_INT >= 11 ) {
+							getLoaderManager().restartLoader(0, null, callbacks);
+						} else {
+							adapt.getCursor().requery();
+						}
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
 
 					/* Clear textboxes. */
 					distanceEntry.setText("");
@@ -194,17 +222,17 @@ public class MileageActivity extends Activity {
 				double price = Double.parseDouble(priceEntry.getText()
 						.toString());
 
-				if( !cursor.moveToFirst() ) {
+				if( !adapt.getCursor().moveToFirst() ) {
 					Toast toast = Toast.makeText(getApplicationContext(), "No items to merge with", Toast.LENGTH_LONG);
 					toast.show();
 					return;
 				}
 				
-				double nMiles = cursor.getDouble(cursor
+				double nMiles = adapt.getCursor().getDouble(adapt.getCursor()
 						.getColumnIndex(Database.KEY_MILES));
-				double nLitres = cursor.getDouble(cursor
+				double nLitres = adapt.getCursor().getDouble(adapt.getCursor()
 						.getColumnIndex(Database.KEY_LITRES));
-				double nPrice = cursor.getDouble(cursor
+				double nPrice = adapt.getCursor().getDouble(adapt.getCursor()
 						.getColumnIndex(Database.KEY_PRICE));
 
 				price = (price * litres + nPrice * nLitres)
@@ -212,22 +240,27 @@ public class MileageActivity extends Activity {
 				miles += nMiles;
 				litres += nLitres;
 
-				SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT);
+				SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT, Locale.getDefault());
 				ContentValues vals = new ContentValues();
 				vals.put(Database.KEY_DATE, sdate.format(new Date()));
 				vals.put(Database.KEY_MILES, miles);
 				vals.put(Database.KEY_LITRES, litres);
 				vals.put(Database.KEY_PRICE, price);
-				db.update(
-						Database.TABLE_NAME,
-						vals,
-						Database.KEY_ID
-								+ "="
-								+ cursor.getInt(cursor
-										.getColumnIndex(Database.KEY_ID)), null);
-
-				/* Update database view. */
-				cursor.requery();
+				try {
+					cpr.update(MileageProvider.CONTENT_URI,
+							vals,
+							Database.KEY_ID
+									+ "="
+									+ adapt.getCursor().getInt(adapt.getCursor()
+											.getColumnIndex(Database.KEY_ID)), null);
+					if( Build.VERSION.SDK_INT >= 11 ) {
+						getLoaderManager().restartLoader(0, null, callbacks);
+					} else {
+						adapt.getCursor().requery();
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 
 				/* Clear textboxes. */
 				distanceEntry.setText("");
@@ -240,7 +273,12 @@ public class MileageActivity extends Activity {
 				}
 			}
 		});
-
+		
+		if( Build.VERSION.SDK_INT >= 11 ) {
+			getLoaderManager().initLoader(0, null, callbacks);
+		} else {
+			adapt.getCursor().requery();
+		}
 	}
 
 	@Override
@@ -288,9 +326,6 @@ public class MileageActivity extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
-		cursor.close();
-		db.close();
 	}
 
 	public void listItemClickHandler(View v) {
@@ -344,7 +379,7 @@ public class MileageActivity extends Activity {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setTitle("About Mileage")
 				.setMessage(
-						"© 2012 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
+						"© 2014 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
 								+ versionString)
 				.setNeutralButton("License", new AlertDialog.OnClickListener() {
 
@@ -366,8 +401,16 @@ public class MileageActivity extends Activity {
 				.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						db.delete(Database.TABLE_NAME, null, null);
-						cursor.requery();
+						try {
+							cpr.delete(MileageProvider.CONTENT_URI, null, null);
+							if( Build.VERSION.SDK_INT >= 11 ) {
+								getLoaderManager().restartLoader(0, null, callbacks);
+							} else {
+								adapt.getCursor().requery();
+							}
+						} catch (RemoteException e) {
+							e.printStackTrace();
+						}
 						dialog.cancel();
 					}
 				}).setNegativeButton("No", new AlertDialog.OnClickListener() {
@@ -438,6 +481,27 @@ public class MileageActivity extends Activity {
 			economyLabel.setText(ECONOMY_LABEL_LP100KM);
 			break;
 		}
+	}
 
+	private class MileageCallbacks
+		implements LoaderManager.LoaderCallbacks<Cursor> {
+		
+		private Activity activity;
+		
+		MileageCallbacks(Activity activity) {
+			this.activity = activity;
+		}
+		
+		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+			return new CursorLoader(activity, MileageProvider.CONTENT_URI, null, null, null, null);
+		}
+	
+		public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+			adapt.swapCursor(cursor);
+		}
+	
+		public void onLoaderReset(Loader<Cursor> loader) {
+			adapt.swapCursor(null);
+		}
 	}
 }

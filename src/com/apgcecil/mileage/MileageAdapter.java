@@ -23,7 +23,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -31,8 +33,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MileageAdapter extends CursorAdapter {
 	
@@ -45,20 +47,20 @@ public class MileageAdapter extends CursorAdapter {
 	private static final String DISPLAY_DATE_FORMAT = "dd MMM yy";	
 	private final SharedPreferences prefs;
 	private final LayoutInflater inflater;
-	private final int dateColumn;
-	private final int milesColumn;
-	private final int litresColumn;
-	private final int priceColumn;
 	private final HashMap<LinearLayout, MileageItemData> adapterData = new HashMap<LinearLayout, MileageItemData>();
 	
-	public MileageAdapter(Context context, Cursor c, SharedPreferences prefs) {		
+	@SuppressLint("NewApi")
+	public MileageAdapter(Context context, SharedPreferences prefs) {
+		super(context, null, 0);
+		this.prefs = prefs;
+		inflater = LayoutInflater.from(context);
+	}
+	
+	@SuppressWarnings("deprecation")
+	public MileageAdapter(Context context, Cursor c, SharedPreferences prefs) {
 		super(context, c);
 		this.prefs = prefs;
 		inflater = LayoutInflater.from(context);
-		dateColumn = c.getColumnIndex(Database.KEY_DATE);
-		milesColumn = c.getColumnIndex(Database.KEY_MILES);
-		litresColumn = c.getColumnIndex(Database.KEY_LITRES);
-		priceColumn = c.getColumnIndex(Database.KEY_PRICE);
 	}
 
 	@Override
@@ -68,17 +70,22 @@ public class MileageAdapter extends CursorAdapter {
 		TextView economyView = (TextView) view.findViewById(R.id.economyLabel);
 		TextView costView = (TextView) view.findViewById(R.id.costLabel);
 		
+		final int dateColumn = cursor.getColumnIndex(Database.KEY_DATE);
+		final int milesColumn = cursor.getColumnIndex(Database.KEY_MILES);
+		final int litresColumn = cursor.getColumnIndex(Database.KEY_LITRES);
+		final int priceColumn = cursor.getColumnIndex(Database.KEY_PRICE);
+		
 		String date = cursor.getString(dateColumn);
 		double miles = cursor.getDouble(milesColumn);
 		double litres = cursor.getDouble(litresColumn);
 		double price = cursor.getDouble(priceColumn);
 		
 		String outDate = null;
-		SimpleDateFormat curFormater = new SimpleDateFormat(MileageActivity.DB_DATE_FORMAT);
+		SimpleDateFormat curFormater = new SimpleDateFormat(MileageActivity.DB_DATE_FORMAT, Locale.getDefault());
 		Date dateObj;
 		try {
 			dateObj = curFormater.parse(date);
-			SimpleDateFormat postFormater = new SimpleDateFormat(DISPLAY_DATE_FORMAT);
+			SimpleDateFormat postFormater = new SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault());
 			outDate = postFormater.format(dateObj);
 		} catch (ParseException e) {
 			/* Just use first 10 chars of date string. */
@@ -124,6 +131,7 @@ public class MileageAdapter extends CursorAdapter {
 		itemData.litres = litres;
 		itemData.price = price;
 		adapterData.put((LinearLayout)view, itemData);
+		
 	}
 
 	@Override
@@ -134,5 +142,4 @@ public class MileageAdapter extends CursorAdapter {
 	public MileageItemData getItemData(LinearLayout ll) {
 		return adapterData.get(ll);
 	}
-	
 }

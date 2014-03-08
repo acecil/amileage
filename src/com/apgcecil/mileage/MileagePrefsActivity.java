@@ -18,14 +18,39 @@
  */
 package com.apgcecil.mileage;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 
+@SuppressLint("NewApi")
 public class MileagePrefsActivity extends PreferenceActivity {
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
-	    addPreferencesFromResource(R.xml.preferences);
+	    
+		if( Build.VERSION.SDK_INT >= 11 ) {	    
+			getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefsFragment()).commit();
+		} else {
+			addPreferencesFromResource(R.xml.preferences);
+		}
 	}
+	
+	public static class PrefsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            PreferenceManager.setDefaultValues(getActivity(),
+                    R.xml.preferences, false);
+
+            addPreferencesFromResource(R.xml.preferences);
+        }
+    }
+
+
 }

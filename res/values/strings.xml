@@ -25,5 +25,7 @@
     <string name="pref_name">Mileage Preferences</string>
     <string name="lic_title">License</string>
     <string name="DateLabel">Date</string>
+    <string name="permission_desc">Permission</string>
+    <string name="permission_label">Permission</string>
 
 </resources>
