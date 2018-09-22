@@ -19,10 +19,10 @@
  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.apgcecil.mileage"
-    android:versionCode="6"
-    android:versionName="1.0.5" >
+    android:versionCode="7"
+    android:versionName="1.0.6" >
 
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19" />
+    <uses-sdk />
     <permission
         android:name=".WRITE_PERMISSION"
         android:description="@string/permission_desc"

@@ -379,7 +379,7 @@ public class MileageActivity extends Activity {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setTitle("About Mileage")
 				.setMessage(
-						"© 2014 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
+						"(c) 2014 - 2018 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
 								+ versionString)
 				.setNeutralButton("License", new AlertDialog.OnClickListener() {
 

@@ -23,6 +23,7 @@ Thumbs.db
 
 # Android Studio
 *.iml
+*.keystore
 .idea
 .gradle
 gradle/
@@ -32,7 +33,7 @@ build/
 captures/
 output.json 
 
-#NDK
+# NDK
 obj/
 .externalNativeBuild
 
