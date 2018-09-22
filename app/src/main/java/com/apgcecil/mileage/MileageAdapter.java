@@ -47,7 +47,7 @@ public class MileageAdapter extends CursorAdapter {
 	private static final String DISPLAY_DATE_FORMAT = "dd MMM yy";	
 	private final SharedPreferences prefs;
 	private final LayoutInflater inflater;
-	private final HashMap<LinearLayout, MileageItemData> adapterData = new HashMap<LinearLayout, MileageItemData>();
+	private final HashMap<LinearLayout, MileageItemData> adapterData = new HashMap<>();
 	
 	@SuppressLint("NewApi")
 	public MileageAdapter(Context context, SharedPreferences prefs) {
@@ -66,9 +66,9 @@ public class MileageAdapter extends CursorAdapter {
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 				
-		TextView dateView = (TextView) view.findViewById(R.id.dateLabel);
-		TextView economyView = (TextView) view.findViewById(R.id.economyLabel);
-		TextView costView = (TextView) view.findViewById(R.id.costLabel);
+		TextView dateView = view.findViewById(R.id.dateLabel);
+		TextView economyView = view.findViewById(R.id.economyLabel);
+		TextView costView = view.findViewById(R.id.costLabel);
 		
 		final int dateColumn = cursor.getColumnIndex(Database.KEY_DATE);
 		final int milesColumn = cursor.getColumnIndex(Database.KEY_MILES);
@@ -80,13 +80,13 @@ public class MileageAdapter extends CursorAdapter {
 		double litres = cursor.getDouble(litresColumn);
 		double price = cursor.getDouble(priceColumn);
 		
-		String outDate = null;
-		SimpleDateFormat curFormater = new SimpleDateFormat(MileageActivity.DB_DATE_FORMAT, Locale.getDefault());
+		String outDate;
+		SimpleDateFormat curFormatter = new SimpleDateFormat(MileageActivity.DB_DATE_FORMAT, Locale.getDefault());
 		Date dateObj;
 		try {
-			dateObj = curFormater.parse(date);
-			SimpleDateFormat postFormater = new SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault());
-			outDate = postFormater.format(dateObj);
+			dateObj = curFormatter.parse(date);
+			SimpleDateFormat postFormatter = new SimpleDateFormat(DISPLAY_DATE_FORMAT, Locale.getDefault());
+			outDate = postFormatter.format(dateObj);
 		} catch (ParseException e) {
 			/* Just use first 10 chars of date string. */
 			outDate = date.substring(0, 10);

@@ -27,17 +27,15 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 
-public class License {
+class License {
 
 	public static void show(final Activity activity) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		builder.setTitle(R.string.lic_title);
 		builder.setCancelable(true);
-		builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-			public void onCancel(DialogInterface dialog) {
-				;
-			}
-		});
+		builder.setOnCancelListener(dialog -> {
+            ;
+        });
 		builder.setMessage(readFile(activity));
 		builder.create().show();
 	}

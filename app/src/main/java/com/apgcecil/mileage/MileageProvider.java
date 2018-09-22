@@ -10,8 +10,7 @@ public class MileageProvider extends ContentProvider {
 	
 	public final static String URI = "com.apgcecil.mileage.MileageProvider";
 	public final static Uri CONTENT_URI = Uri.parse("content://" + URI);
-	
-	private Database dbHelper = null;
+
 	private SQLiteDatabase db = null;
 
 	@Override
@@ -32,7 +31,7 @@ public class MileageProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		dbHelper = new Database(getContext());
+		Database dbHelper = new Database(getContext());
 		db = dbHelper.getWritableDatabase();
 		return true;
 	}

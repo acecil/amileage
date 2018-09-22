@@ -59,36 +59,33 @@ import com.apgcecil.mileage.MileageAdapter.MileageItemData;
 @SuppressWarnings("deprecation")
 public class MileageActivity extends Activity {
 	
-	public static final int PREFERENCE_CODE = 1;
+	private static final int PREFERENCE_CODE = 1;
 	public static final String DB_DATE_FORMAT = "yyyy-dd-MM HH:mm:ss";
-	public static final String DISTANCE_SAVE = "Distance";
-	public static final String VOLUME_SAVE = "Volume";
-	public static final String PRICE_SAVE = "Price";
+	private static final String DISTANCE_SAVE = "Distance";
+	private static final String VOLUME_SAVE = "Volume";
+	private static final String PRICE_SAVE = "Price";
 	public static final String DISTANCE_UNITS = "DistanceUnits";
-	public static final String VOLUME_UNITS = "VolumeUnits";
+	private static final String VOLUME_UNITS = "VolumeUnits";
 	public static final String ECONOMY_UNITS = "EconomyUnits";
 	public static final int DISTANCE_UNITS_MILES = 0;
 	public static final int DISTANCE_UNITS_KM = 1;
-	public static final int VOLUME_UNITS_LITRES = 0;
-	public static final int VOLUME_UNITS_GALLONS = 1;
-	public static final int VOLUME_UNITS_US_GALLONS = 2;
+	private static final int VOLUME_UNITS_LITRES = 0;
+	private static final int VOLUME_UNITS_GALLONS = 1;
+	private static final int VOLUME_UNITS_US_GALLONS = 2;
 	public static final int ECONOMY_UNITS_MPG = 0;
 	public static final int ECONOMY_UNITS_US_MPG = 1;
 	public static final int ECONOMY_UNITS_LP100KM = 2;
-	public static final String ECONOMY_LABEL_MPG = "mpg";
-	public static final String ECONOMY_LABEL_US_MPG = "mpg";
-	public static final String ECONOMY_LABEL_LP100KM = "l/100km";
-	public static final String COST_LABEL_PPM = "p/m";
-	public static final String COST_LABEL_PPKM = "p/km";
+	private static final String ECONOMY_LABEL_MPG = "mpg";
+	private static final String ECONOMY_LABEL_US_MPG = "mpg";
+	private static final String ECONOMY_LABEL_LP100KM = "l/100km";
+	private static final String COST_LABEL_PPM = "p/m";
+	private static final String COST_LABEL_PPKM = "p/km";
 
 	private TextView distanceEntry = null;
 	private TextView volumeEntry = null;
 	private TextView priceEntry = null;
-	private Button addButton = null;
-	private Button mergeButton = null;
 	private TextView economyLabel = null;
 	private TextView costLabel = null;
-	private ListView mileageList = null;
 	private MileageAdapter adapt = null;
 	private ContentProviderClient cpr = null;
 	private SharedPreferences prefs = null;
@@ -104,14 +101,14 @@ public class MileageActivity extends Activity {
 		cpr = getContentResolver().acquireContentProviderClient(MileageProvider.URI);
 
 		/* Get references to all widgets in GUI. */
-		addButton = (Button) findViewById(R.id.addButton);
-		mergeButton = (Button) findViewById(R.id.mergeButton);
-		mileageList = (ListView) findViewById(R.id.mileageList);
-		distanceEntry = (TextView) findViewById(R.id.distanceEntry);
-		volumeEntry = (TextView) findViewById(R.id.volumeEntry);
-		priceEntry = (TextView) findViewById(R.id.priceEntry);
-		economyLabel = (TextView) findViewById(R.id.economyLabel);
-		costLabel = (TextView) findViewById(R.id.costLabel);
+		Button addButton = findViewById(R.id.addButton);
+		Button mergeButton = findViewById(R.id.mergeButton);
+		ListView mileageList = findViewById(R.id.mileageList);
+		distanceEntry = findViewById(R.id.distanceEntry);
+		volumeEntry = findViewById(R.id.volumeEntry);
+		priceEntry = findViewById(R.id.priceEntry);
+		economyLabel = findViewById(R.id.economyLabel);
+		costLabel = findViewById(R.id.costLabel);
 
 		/* Set labels based on preferences. */
 		setLabels();
@@ -140,75 +137,72 @@ public class MileageActivity extends Activity {
 		mileageList.setClickable(true);
 
 		/* Button callbacks. */
-		addButton.setOnClickListener(new OnClickListener() {
+		addButton.setOnClickListener(v -> {
+            /* Add items to database. */
+            try {
+                double distance = Double.parseDouble(distanceEntry
+                        .getText().toString());
+                double volume = Double.parseDouble(volumeEntry.getText()
+                        .toString());
+                double price = Double.parseDouble(priceEntry.getText()
+                        .toString());
 
-			public void onClick(View v) {
-				/* Add items to database. */
-				try {
-					double distance = Double.parseDouble(distanceEntry
-							.getText().toString());
-					double volume = Double.parseDouble(volumeEntry.getText()
-							.toString());
-					double price = Double.parseDouble(priceEntry.getText()
-							.toString());
+                /* Convert distance and volume if required. */
+                SharedPreferences prefs = PreferenceManager
+                        .getDefaultSharedPreferences(activity);
+                int distanceUnits = Integer.parseInt(prefs.getString(
+                        DISTANCE_UNITS,
+                        Integer.toString(DISTANCE_UNITS_MILES)));
+                switch (distanceUnits) {
+                case DISTANCE_UNITS_MILES:
+                    /* Nothing to do. */
+                    break;
+                case DISTANCE_UNITS_KM:
+                    distance *= 0.621371192;
+                    break;
+                }
+                int volumeUnits = Integer.parseInt(prefs.getString(
+                        VOLUME_UNITS, Integer.toString(VOLUME_UNITS_LITRES)));
+                switch (volumeUnits) {
+                case VOLUME_UNITS_LITRES:
+                    /* Nothing to do. */
+                    break;
+                case VOLUME_UNITS_GALLONS:
+                    volume *= 4.54609188;
+                    break;
+                case VOLUME_UNITS_US_GALLONS:
+                    volume *= 3.78541178;
+                    break;
+                }
 
-					/* Convert distance and volume if required. */
-					SharedPreferences prefs = PreferenceManager
-							.getDefaultSharedPreferences(activity);
-					int distanceUnits = Integer.parseInt(prefs.getString(
-							DISTANCE_UNITS,
-							Integer.toString(DISTANCE_UNITS_MILES)));
-					switch (distanceUnits) {
-					case DISTANCE_UNITS_MILES:
-						/* Nothing to do. */
-						break;
-					case DISTANCE_UNITS_KM:
-						distance *= 0.621371192;
-						break;
-					}
-					int volumeUnits = Integer.parseInt(prefs.getString(
-							VOLUME_UNITS, Integer.toString(VOLUME_UNITS_LITRES)));
-					switch (volumeUnits) {
-					case VOLUME_UNITS_LITRES:
-						/* Nothing to do. */
-						break;
-					case VOLUME_UNITS_GALLONS:
-						volume *= 4.54609188;
-						break;
-					case VOLUME_UNITS_US_GALLONS:
-						volume *= 3.78541178;
-						break;
-					}
+                SimpleDateFormat sdate = new SimpleDateFormat(
+                        DB_DATE_FORMAT, Locale.getDefault());
+                ContentValues vals = new ContentValues();
+                vals.put(Database.KEY_DATE, sdate.format(new Date()));
+                vals.put(Database.KEY_MILES, distance);
+                vals.put(Database.KEY_LITRES, volume);
+                vals.put(Database.KEY_PRICE, price);
+                try {
+                    cpr.insert(MileageProvider.CONTENT_URI, vals);
+                    if( Build.VERSION.SDK_INT >= 11 ) {
+                        getLoaderManager().restartLoader(0, null, callbacks);
+                    } else {
+                        adapt.getCursor().requery();
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
 
-					SimpleDateFormat sdate = new SimpleDateFormat(
-							DB_DATE_FORMAT, Locale.getDefault());
-					ContentValues vals = new ContentValues();
-					vals.put(Database.KEY_DATE, sdate.format(new Date()));
-					vals.put(Database.KEY_MILES, distance);
-					vals.put(Database.KEY_LITRES, volume);
-					vals.put(Database.KEY_PRICE, price);
-					try {
-						cpr.insert(MileageProvider.CONTENT_URI, vals);
-						if( Build.VERSION.SDK_INT >= 11 ) {
-							getLoaderManager().restartLoader(0, null, callbacks);
-						} else {
-							adapt.getCursor().requery();
-						}
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
+                /* Clear text boxes. */
+                distanceEntry.setText("");
+                volumeEntry.setText("");
+                priceEntry.setText("");
 
-					/* Clear textboxes. */
-					distanceEntry.setText("");
-					volumeEntry.setText("");
-					priceEntry.setText("");
-
-				} catch (NumberFormatException n) {
-					Toast toast = Toast.makeText(getApplicationContext(), "Invalid value", Toast.LENGTH_LONG);
-					toast.show();
-				}
-			}
-		});
+            } catch (NumberFormatException n) {
+                Toast toast = Toast.makeText(getApplicationContext(), "Invalid value", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
 
 		mergeButton.setOnClickListener(new OnClickListener() {
 
@@ -262,7 +256,7 @@ public class MileageActivity extends Activity {
 					e.printStackTrace();
 				}
 
-				/* Clear textboxes. */
+				/* Clear text boxes. */
 				distanceEntry.setText("");
 				volumeEntry.setText("");
 				priceEntry.setText("");
@@ -361,13 +355,13 @@ public class MileageActivity extends Activity {
 			volume *= 3.78541178;
 			break;
 		}
-		distanceEntry.setText(Double.toString(distance));
-		volumeEntry.setText(Double.toString(volume));
-		priceEntry.setText(Double.toString(m.price));
+		distanceEntry.setText(String.format(Locale.US, "%f", distance));
+		volumeEntry.setText(String.format(Locale.US, "%f", volume));
+		priceEntry.setText(String.format(Locale.US, "%f", m.price));
 	}
 
 	private boolean onClickAboutMenuItem() {
-		String versionString = "Unknown";
+		String versionString;
 		try {
 			versionString = getPackageManager().getPackageInfo(
 					getPackageName(), 0).versionName;
@@ -377,7 +371,7 @@ public class MileageActivity extends Activity {
 		}
 		final Activity activity = this;
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
-		b.setTitle("About Mileage")
+		final AlertDialog.Builder builder = b.setTitle("About Mileage")
 				.setMessage(
 						"(c) 2014 - 2018 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
 								+ versionString)

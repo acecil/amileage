@@ -18,9 +18,23 @@
   along with Mileage.  If not, see <http://www.gnu.org/licenses/>.
  -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/aboutItem" android:alphabeticShortcut="a" android:title="About" android:enabled="true" android:visible="true"></item>
-    <item android:id="@+id/deleteHistoryItem" android:alphabeticShortcut="d" android:title="Delete History" android:enabled="true" android:visible="true"></item>
-    <item android:id="@+id/preferencesItem" android:alphabeticShortcut="p" android:title="Preferences" android:titleCondensed="Preferences"></item>
+    <item
+        android:id="@+id/aboutItem"
+        android:alphabeticShortcut="a"
+        android:title="About"
+        android:enabled="true"
+        android:visible="true" />
+    <item
+        android:id="@+id/deleteHistoryItem"
+        android:alphabeticShortcut="d"
+        android:title="Delete History"
+        android:enabled="true"
+        android:visible="true" />
+    <item
+        android:id="@+id/preferencesItem"
+        android:alphabeticShortcut="p"
+        android:title="Preferences"
+        android:titleCondensed="Preferences" />
     
 
 </menu>

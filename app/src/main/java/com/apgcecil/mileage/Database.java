@@ -22,7 +22,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class Database extends SQLiteOpenHelper {
+class Database extends SQLiteOpenHelper {
 	public final static String TABLE_NAME = "mileage";
 	public final static String KEY_ID = "_id";
 	public final static String KEY_DATE = "date";
@@ -30,7 +30,7 @@ public class Database extends SQLiteOpenHelper {
 	public final static String KEY_LITRES = "litres";
 	public final static String KEY_PRICE = "price";
 
-	public Database(Context context) {
+	Database(Context context) {
 		super(context, "db", null, 1);
 		
 	}
