@@ -11,7 +11,8 @@
         android:layout_weight="1"
         android:clickable="true"
         android:gravity="center_horizontal"
-        android:onClick="listItemClickHandler" >
+        android:onClick="listItemClickHandler"
+        android:focusable="true">
     </TextView>
 
     <TextView
@@ -21,7 +22,8 @@
         android:layout_weight="1"
         android:clickable="true"
         android:gravity="center_horizontal"
-        android:onClick="listItemClickHandler" />
+        android:onClick="listItemClickHandler"
+        android:focusable="true" />
 
     <TextView
         android:id="@+id/costLabel"
@@ -30,6 +32,7 @@
         android:layout_weight="1"
         android:clickable="true"
         android:gravity="center_horizontal"
-        android:onClick="listItemClickHandler" />
+        android:onClick="listItemClickHandler"
+        android:focusable="true" />
 
 </LinearLayout>

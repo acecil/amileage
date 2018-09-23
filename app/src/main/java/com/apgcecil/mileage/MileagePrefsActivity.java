@@ -32,8 +32,8 @@ public class MileagePrefsActivity extends PreferenceActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
-	    
-		if( Build.VERSION.SDK_INT >= 11 ) {	    
+
+		if( Build.VERSION.SDK_INT >= 11 ) {
 			getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefsFragment()).commit();
 		} else {
 			addPreferencesFromResource(R.xml.preferences);

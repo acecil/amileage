@@ -21,19 +21,19 @@
     <item
         android:id="@+id/aboutItem"
         android:alphabeticShortcut="a"
-        android:title="About"
+        android:title="@string/about"
         android:enabled="true"
         android:visible="true" />
     <item
         android:id="@+id/deleteHistoryItem"
         android:alphabeticShortcut="d"
-        android:title="Delete History"
+        android:title="@string/delete_history"
         android:enabled="true"
         android:visible="true" />
     <item
         android:id="@+id/preferencesItem"
         android:alphabeticShortcut="p"
-        android:title="Preferences"
+        android:title="@string/preferences"
         android:titleCondensed="Preferences" />
     
 

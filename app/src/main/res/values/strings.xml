@@ -27,5 +27,10 @@
     <string name="DateLabel">Date</string>
     <string name="permission_desc">Permission</string>
     <string name="permission_label">Permission</string>
+    <string name="distance">Distance</string>
+    <string name="volume">Volume</string>
+    <string name="about">About</string>
+    <string name="delete_history">Delete History</string>
+    <string name="preferences">Preferences</string>
 
 </resources>

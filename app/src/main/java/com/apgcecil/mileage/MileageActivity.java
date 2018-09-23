@@ -29,7 +29,6 @@ import android.app.LoaderManager;
 import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -46,7 +45,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -90,7 +88,9 @@ public class MileageActivity extends Activity {
 	private ContentProviderClient cpr = null;
 	private SharedPreferences prefs = null;
 	private MileageCallbacks callbacks = null;
-	
+
+	private Cursor cursor = null;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -120,7 +120,7 @@ public class MileageActivity extends Activity {
 		} else {
 			SQLiteOpenHelper dbHelper = new Database(this);
 			SQLiteDatabase db = dbHelper.getWritableDatabase();
-			Cursor cursor = db.query(Database.TABLE_NAME, null, null, null, null, null,
+			cursor = db.query(Database.TABLE_NAME, null, null, null, null, null,
 					Database.KEY_DATE + " DESC");
 			adapt = new MileageAdapter(this, cursor, prefs);
 		}
@@ -204,69 +204,66 @@ public class MileageActivity extends Activity {
             }
         });
 
-		mergeButton.setOnClickListener(new OnClickListener() {
+		mergeButton.setOnClickListener(v -> {
+            try {
+            /* Merge item with top item in database. */
+            double miles = Double.parseDouble(distanceEntry.getText()
+                    .toString());
+            double litres = Double.parseDouble(volumeEntry.getText()
+                    .toString());
+            double price = Double.parseDouble(priceEntry.getText()
+                    .toString());
 
-			public void onClick(View v) {
-				try {
-				/* Merge item with top item in database. */
-				double miles = Double.parseDouble(distanceEntry.getText()
-						.toString());
-				double litres = Double.parseDouble(volumeEntry.getText()
-						.toString());
-				double price = Double.parseDouble(priceEntry.getText()
-						.toString());
+            if( !adapt.getCursor().moveToFirst() ) {
+                Toast toast = Toast.makeText(getApplicationContext(), "No items to merge with", Toast.LENGTH_LONG);
+                toast.show();
+                return;
+            }
 
-				if( !adapt.getCursor().moveToFirst() ) {
-					Toast toast = Toast.makeText(getApplicationContext(), "No items to merge with", Toast.LENGTH_LONG);
-					toast.show();
-					return;
-				}
-				
-				double nMiles = adapt.getCursor().getDouble(adapt.getCursor()
-						.getColumnIndex(Database.KEY_MILES));
-				double nLitres = adapt.getCursor().getDouble(adapt.getCursor()
-						.getColumnIndex(Database.KEY_LITRES));
-				double nPrice = adapt.getCursor().getDouble(adapt.getCursor()
-						.getColumnIndex(Database.KEY_PRICE));
+            double nMiles = adapt.getCursor().getDouble(adapt.getCursor()
+                    .getColumnIndex(Database.KEY_MILES));
+            double nLitres = adapt.getCursor().getDouble(adapt.getCursor()
+                    .getColumnIndex(Database.KEY_LITRES));
+            double nPrice = adapt.getCursor().getDouble(adapt.getCursor()
+                    .getColumnIndex(Database.KEY_PRICE));
 
-				price = (price * litres + nPrice * nLitres)
-						/ (litres + nLitres);
-				miles += nMiles;
-				litres += nLitres;
+            price = (price * litres + nPrice * nLitres)
+                    / (litres + nLitres);
+            miles += nMiles;
+            litres += nLitres;
 
-				SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT, Locale.getDefault());
-				ContentValues vals = new ContentValues();
-				vals.put(Database.KEY_DATE, sdate.format(new Date()));
-				vals.put(Database.KEY_MILES, miles);
-				vals.put(Database.KEY_LITRES, litres);
-				vals.put(Database.KEY_PRICE, price);
-				try {
-					cpr.update(MileageProvider.CONTENT_URI,
-							vals,
-							Database.KEY_ID
-									+ "="
-									+ adapt.getCursor().getInt(adapt.getCursor()
-											.getColumnIndex(Database.KEY_ID)), null);
-					if( Build.VERSION.SDK_INT >= 11 ) {
-						getLoaderManager().restartLoader(0, null, callbacks);
-					} else {
-						adapt.getCursor().requery();
-					}
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+            SimpleDateFormat sdate = new SimpleDateFormat(DB_DATE_FORMAT, Locale.getDefault());
+            ContentValues vals = new ContentValues();
+            vals.put(Database.KEY_DATE, sdate.format(new Date()));
+            vals.put(Database.KEY_MILES, miles);
+            vals.put(Database.KEY_LITRES, litres);
+            vals.put(Database.KEY_PRICE, price);
+            try {
+                cpr.update(MileageProvider.CONTENT_URI,
+                        vals,
+                        Database.KEY_ID
+                                + "="
+                                + adapt.getCursor().getInt(adapt.getCursor()
+                                        .getColumnIndex(Database.KEY_ID)), null);
+                if( Build.VERSION.SDK_INT >= 11 ) {
+                    getLoaderManager().restartLoader(0, null, callbacks);
+                } else {
+                    adapt.getCursor().requery();
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
 
-				/* Clear text boxes. */
-				distanceEntry.setText("");
-				volumeEntry.setText("");
-				priceEntry.setText("");
-				
-				} catch (NumberFormatException n) {
-					Toast toast = Toast.makeText(getApplicationContext(), "Invalid value", Toast.LENGTH_LONG);
-					toast.show();
-				}
-			}
-		});
+            /* Clear text boxes. */
+            distanceEntry.setText("");
+            volumeEntry.setText("");
+            priceEntry.setText("");
+
+            } catch (NumberFormatException n) {
+                Toast toast = Toast.makeText(getApplicationContext(), "Invalid value", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
 		
 		if( Build.VERSION.SDK_INT >= 11 ) {
 			getLoaderManager().initLoader(0, null, callbacks);
@@ -288,11 +285,14 @@ public class MileageActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem menuItem) {
 		switch (menuItem.getItemId()) {
 		case R.id.aboutItem:
-			return onClickAboutMenuItem();
+			onClickAboutMenuItem();
+			return true;
 		case R.id.deleteHistoryItem:
-			return onClickDeleteHistoryMenuItem();
+			onClickDeleteHistoryMenuItem();
+			return true;
 		case R.id.preferencesItem:
-			return onClickPreferencesMenuItem();
+			onClickPreferencesMenuItem();
+			return true;
 		default:
 			return false;
 		}
@@ -320,6 +320,7 @@ public class MileageActivity extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		cursor.close();
 	}
 
 	public void listItemClickHandler(View v) {
@@ -360,7 +361,7 @@ public class MileageActivity extends Activity {
 		priceEntry.setText(String.format(Locale.US, "%f", m.price));
 	}
 
-	private boolean onClickAboutMenuItem() {
+	private void onClickAboutMenuItem() {
 		String versionString;
 		try {
 			versionString = getPackageManager().getPackageInfo(
@@ -371,59 +372,41 @@ public class MileageActivity extends Activity {
 		}
 		final Activity activity = this;
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
-		final AlertDialog.Builder builder = b.setTitle("About Mileage")
+		b.setTitle("About Mileage")
 				.setMessage(
 						"(c) 2014 - 2018 Andrew Gascoyne-Cecil\n<gascoyne@gmail.com>\nVersion "
 								+ versionString)
-				.setNeutralButton("License", new AlertDialog.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						License.show(activity);
-					}
-				});
+				.setNeutralButton("License", (dialog, which) -> License.show(activity));
 		AlertDialog d = b.create();
 		d.show();
-
-		return true;
 	}
 
-	private boolean onClickDeleteHistoryMenuItem() {
+	private void onClickDeleteHistoryMenuItem() {
 		AlertDialog.Builder b = new AlertDialog.Builder(this);
 		b.setTitle("Delete History")
 				.setMessage(
 						"This will erase all previous records.\nAre you sure?")
-				.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						try {
-							cpr.delete(MileageProvider.CONTENT_URI, null, null);
-							if( Build.VERSION.SDK_INT >= 11 ) {
-								getLoaderManager().restartLoader(0, null, callbacks);
-							} else {
-								adapt.getCursor().requery();
-							}
-						} catch (RemoteException e) {
-							e.printStackTrace();
-						}
-						dialog.cancel();
-					}
-				}).setNegativeButton("No", new AlertDialog.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				});
+				.setPositiveButton("Yes", (dialog, which) -> {
+                    try {
+                        cpr.delete(MileageProvider.CONTENT_URI, null, null);
+                        if( Build.VERSION.SDK_INT >= 11 ) {
+                            getLoaderManager().restartLoader(0, null, callbacks);
+                        } else {
+                            adapt.getCursor().requery();
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    dialog.cancel();
+                }).setNegativeButton("No", (dialog, which) -> dialog.cancel());
 		AlertDialog d = b.create();
 		d.show();
-
-		return true;
 	}
 
-	private boolean onClickPreferencesMenuItem() {
+	private void onClickPreferencesMenuItem() {
 		/* Launch Preference activity. */
 		Intent i = new Intent(MileageActivity.this, MileagePrefsActivity.class);
 		startActivityForResult(i, PREFERENCE_CODE);
-		return true;
 	}
 
 	@Override
@@ -480,7 +463,7 @@ public class MileageActivity extends Activity {
 	private class MileageCallbacks
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 		
-		private Activity activity;
+		private final Activity activity;
 		
 		MileageCallbacks(Activity activity) {
 			this.activity = activity;
